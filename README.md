@@ -47,7 +47,11 @@ Use the ```launch/experiment_demo_irl.launch``` file to run inverse reinforcemen
 roslaunch learning-nav-irl experiment_demo_irl.launch experiment_folder:=<path_to_folder>
 ```
 
-An rviz window should pop up where you can see the demonstration trajectories, the state visitations and the learned reward. The reward parameters and the gradient are logged in the terminal window and you should find a plot of the optimization objective (maximizing the log-likelihood of the demonstrations) as a .png file in the ```learning-nav-irl``` folder.
+An rviz window should pop up where you can see the demonstration trajectories, the state visitations and the learned reward. 
+
+![visualization](https://github.com/marinaKollmitz/learning-nav-irl/blob/master/img/viz.png?raw=true)
+
+The reward parameters and the gradient are logged in the terminal window and you should find a plot of the optimization objective (maximizing the log-likelihood of the demonstrations) as a .png file in the ```learning-nav-irl``` folder.
 
 ## License
 
