@@ -32,6 +32,13 @@ cd learning-nav-irl/experiments/
 tar -xzf runs.tar.gz
 ```
 
+3. Install pytorch
+
+Our code uses pytorch for gradient-based optimization. Follow the installation instructions from https://pytorch.org/ to install pytorch for your system and architecture. The standard will be:
+```
+pip install torch torchvision
+```
+
 ## Run IRL on experiment demos
 
 Use the ```launch/experiment_demo_irl.launch``` file to run inverse reinforcement learning on the experiment demonstrations. The launch file takes the path of the experiment run folder as argument:
