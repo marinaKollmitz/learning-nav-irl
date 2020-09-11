@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+<arg name="experiment_folder" default="$(find learning-nav-irl)/experiments/runs/2316/"/>
+
+<!-- start map server -->
+<node name="map_server" pkg="map_server" type="map_server" args="$(find learning-nav-irl)/maps/hallway2_bld080.yaml" >
+  <param name="frame_id" value="/map" />
+</node>
+
+<!-- start irl experiment retraining node -->
+<node name="experiment_demo_irl" pkg="learning-nav-irl" type="experiment_demo_irl.py" args="$(arg experiment_folder)" respawn="false" output="screen" />
+
+<!-- start rviz for visualization -->
+<node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find learning-nav-irl)/cfg/config.rviz"/>
+
+</launch>
