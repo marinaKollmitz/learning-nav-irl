@@ -26,9 +26,11 @@ from nav_msgs.msg import OccupancyGrid
 def publish_demo_markers(demos, timestamp, publisher):
     """
     Publish marker array of demonstrations for visualization in rviz.
-    :param demos:
-    :return:
+    :param demos: demo trajectories
+    :param timestamp: ros timestamp
+    :param publisher: ros publisher
     """
+
     markers = MarkerArray()
     for i, demo in enumerate(demos):
         markers.markers.append(demo.get_rviz_marker(i, timestamp))
@@ -39,6 +41,8 @@ def visualize_grid(viz_array, nav_map, timestamp, publisher):
     """
     Publish array as ros OccupancyGrid for visualization.
     :param viz_array: array for visualization
+    :param nav_map: map of the environment
+    :param timestamp: ros timestamp
     :param publisher: ros publisher
     """
 
@@ -65,7 +69,10 @@ def visualize_grid(viz_array, nav_map, timestamp, publisher):
 def publish_people_marker(people_pos, nav_map, timestamp, publisher):
     """
     Get rviz visualization marker for people poses.
-    :return: visualization marker
+    :param people_pos: cell coordinates of people
+    :param nav_map: map of the environment
+    :param timestamp: ros timestamp
+    :param publisher: ros publisher
     """
 
     people_markers = MarkerArray()
@@ -88,6 +95,6 @@ def publish_people_marker(people_pos, nav_map, timestamp, publisher):
         # person orientation hard-coded for visualization
         person_marker.pose.orientation.z = 0.7071068
         person_marker.pose.orientation.w = 0.7071068
-        people_markers.markers.append(copy.copy(person_marker))
+        people_markers.markers.append(copy.deepcopy(person_marker))
 
     publisher.publish(people_markers)
