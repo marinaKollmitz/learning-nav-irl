@@ -1,0 +1,5 @@
+<library path="lib/libglobal_planner_link">
+  <class name="planner_link/GlobalPlanner" type="planner_link::GlobalPlanner" base_class_type="nav_core::BaseGlobalPlanner">
+    <description>This is a global planner plugin that redirects the planning request as a ros service (e.g. for path planners in python).</description>
+  </class>
+ </library>

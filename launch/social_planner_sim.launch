@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+<arg name="reward_param_file" default="$(find learning-nav-irl)/experiments/runs/params_all.pkl"/>
+
+<!-- start map server -->
+<node name="map_server" pkg="map_server" type="map_server" args="$(find learning-nav-irl)/maps/hallway2_bld080.yaml" >
+  <param name="frame_id" value="/map" />
+</node>
+
+<!--- start fake localization -->
+<node pkg="fake_localization" type="fake_localization" name="fake_localization" output="screen" >
+  <remap from="base_pose_ground_truth" to="odom"/>
+</node>
+
+<!-- start move_base -->
+<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" >
+  <rosparam file="$(find learning-nav-irl)/params/global_costmap_params.yaml" command="load"/>
+  <param name="base_local_planner" value="omni_path_follower/PathFollower"/>
+  <param name="base_global_planner" value="planner_link/GlobalPlanner"/>
+  <param name="planner_frequency" value="0.0" />
+</node>
+
+<!-- start social planner node -->
+<node pkg="learning-nav-irl" type="planner_node.py" name="social_planner" args="$(arg reward_param_file)" respawn="false" output="screen" />
+
+</launch>

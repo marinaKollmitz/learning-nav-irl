@@ -19,5 +19,11 @@
   <build_export_depend>rospy</build_export_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <depend>pluginlib</depend>
+  <depend>nav_core</depend>
+
+  <export>
+    <nav_core plugin="${prefix}/global_planner_link.xml" />
+  </export>
 
 </package>
