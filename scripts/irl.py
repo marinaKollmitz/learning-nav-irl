@@ -25,6 +25,7 @@ import torch
 from visualization_msgs.msg import MarkerArray
 
 from logging_helper import setup_logger
+from viz_helper import publish_people_marker
 
 # use matplotlib in non-gui mode
 matplotlib.use('Agg')
@@ -207,7 +208,7 @@ def irl(nav_map, mdp, demonstrations, max_iters=500, epsilon_objective=0.01,
             start = demo_set["start"]
             goal = demo_set["goal"]
             people_pos = demo_set["people_pos"]
-            people_pub.publish(demo_set["demos"][0].get_people_marker(rospy.Time.now()))
+            publish_people_marker(people_pos, nav_map, rospy.Time.now(), people_pub)
 
             # solve (stochastic) MDP with current reward parameters
             values, q_values = mdp.value_iteration(nav_map, people_pos, start, goal, softmax=True)
@@ -265,7 +266,8 @@ def irl(nav_map, mdp, demonstrations, max_iters=500, epsilon_objective=0.01,
 
         # check for ctrl-c
         if rospy.is_shutdown():
-            return None
+            logger.info("shutdown requested")
+            exit(0)
 
     logger.info("Training done. Such IRL magic!")
     return mdp.reward_function.reward_params

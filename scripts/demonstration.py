@@ -70,33 +70,3 @@ class Demonstration:
             demo_marker.points.append(pnt)
 
         return demo_marker
-
-    def get_people_marker(self, timestamp):
-        """
-        Get rviz visualization marker for people poses.
-        :return: visualization marker
-        """
-
-        people_markers = MarkerArray()
-        person_marker = Marker()
-
-        person_marker.header.frame_id = self.nav_map.frame_id
-        person_marker.header.stamp = timestamp
-        person_marker.type = Marker.MESH_RESOURCE
-        person_marker.mesh_resource = "package://learning-nav-irl/meshes/human/meshes/standing.dae"
-        person_marker.mesh_use_embedded_materials = True
-        person_marker.scale.x = 1.0
-        person_marker.scale.y = 1.0
-        person_marker.scale.z = 1.0
-
-        for i, person_pos in enumerate(self.people_pos):
-            person_marker.id = i
-            person_x, person_y = self.nav_map.cell2world(person_pos[0], person_pos[1])
-            person_marker.pose.position.x = person_x
-            person_marker.pose.position.y = person_y
-            # person orientation hard-coded for visualization
-            person_marker.pose.orientation.z = 0.7071068
-            person_marker.pose.orientation.w = 0.7071068
-            people_markers.markers.append(copy.copy(person_marker))
-
-        return people_markers

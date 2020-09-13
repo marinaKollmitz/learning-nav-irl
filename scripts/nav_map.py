@@ -50,32 +50,6 @@ class NavMap:
         map_pub = rospy.Publisher("/inflated_map", OccupancyGrid, latch=True, queue_size=1)
         map_pub.publish(self.ros_occupancy_map)
 
-    def visualize_grid(self, viz_array, publisher):
-        """
-        Publish array as ros OccupancyGrid for visualization.
-        :param viz_array: array for visualization
-        :param publisher: ros publisher
-        """
-
-        viz_map = OccupancyGrid()
-        viz_map.info = copy.deepcopy(self.map_info)
-        viz_map.info.origin.position.z = self.map_info.origin.position.z + 0.1
-
-        viz_map.header.frame_id = self.frame_id
-        viz_map.header.stamp = rospy.Time.now()
-
-        viz_array = copy.deepcopy(viz_array)
-
-        # limit value range for OccupancyGrid type
-        viz_array[np.isnan(viz_array)] = 99
-        viz_array[viz_array > 99] = 99
-        viz_array[viz_array < -99] = -99
-
-        viz_array = viz_array.astype(int)
-        viz_map.data = viz_array.T.flatten().tolist()
-
-        publisher.publish(viz_map)
-
     def cell2world(self, cell_x, cell_y):
         """
         Convert from cell to world coordinates.

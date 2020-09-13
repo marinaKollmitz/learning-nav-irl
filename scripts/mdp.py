@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import copy
 import numpy as np
 from scipy.misc import logsumexp
+from viz_helper import visualize_grid
 
 import rospy
 from nav_msgs.msg import OccupancyGrid
@@ -170,7 +171,7 @@ class GridMDP:
             prob_mass = np.sum(state_visits_tp1)
 
         if viz:
-            nav_map.visualize_grid(50 * state_visits, self.state_viz_pub)
+            visualize_grid(50 * state_visits, nav_map, rospy.Time.now(), self.state_viz_pub)
 
         return state_visits
 

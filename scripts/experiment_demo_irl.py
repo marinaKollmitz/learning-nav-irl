@@ -24,6 +24,7 @@ import pickle
 import sys
 
 import rospy
+from viz_helper import publish_demo_markers
 from visualization_msgs.msg import MarkerArray
 
 from irl import irl
@@ -66,29 +67,48 @@ def setup_mdp():
     return grid_mdp
 
 
-def publish_demo_markers(demos):
+def retrain_all_irl(experiments_path):
     """
-    Publish marker array of demonstrations for visualization in rviz.
-    :param demos:
-    :return:
+    Retrain on recorded demonstrations from all experiment runs.
+    :param experiments_path: path to folder with experiment runs
     """
-    markers = MarkerArray()
-    marker_pub = rospy.Publisher("demos", MarkerArray, latch=True, queue_size=1)
-    for i, demo in enumerate(demos):
-        markers.markers.append(demo.get_rviz_marker(i, rospy.Time.now()))
-    marker_pub.publish(markers)
+
+    grid_mdp = setup_mdp()
+    run_dirs = [d for d in os.listdir(experiments_path) if os.path.isdir(os.path.join(experiments_path, d))]
+
+    if len(run_dirs) > 0:
+
+        nav_map_path = os.path.join(experiments_path, run_dirs[0], "nav_map.pkl")
+        nav_map = pickle.load(open(nav_map_path))
+        nav_map.publish()
+
+        all_demos = []
+        for run_dir in run_dirs:
+
+            demo_path = os.path.join(experiments_path, run_dir, "force_demos.pkl")
+            exp_demos = pickle.load(open(demo_path))
+            all_demos.extend(exp_demos['passing_2'])
+
+        marker_pub = rospy.Publisher("demos", MarkerArray, latch=True, queue_size=1)
+        publish_demo_markers(all_demos, rospy.Time.now(), marker_pub)
+
+        trained_params = irl(nav_map, grid_mdp, all_demos)
+
+        param_save_path = os.path.join(experiments_path, "params.pkl")
+        pickle.dump(trained_params, open(param_save_path, 'wb'))
 
 
-def retrain_irl(experiment_path):
+def retrain_irl(experiment_run_path):
     """
-    Retrain on recorded demonstrations from experiments.
-    :param experiment_path: Path to experiment run
+    Retrain on recorded demonstrations from one experiment run.
+    :param experiment_run_path: Path to experiment run
     """
-    nav_map_path = os.path.join(experiment_path, "nav_map.pkl")
+
+    nav_map_path = os.path.join(experiment_run_path, "nav_map.pkl")
     nav_map = pickle.load(open(nav_map_path))
     nav_map.publish()
 
-    demo_path = os.path.join(experiment_path, "force_demos.pkl")
+    demo_path = os.path.join(experiment_run_path, "force_demos.pkl")
     demos = pickle.load(open(demo_path))
 
     grid_mdp = setup_mdp()
@@ -101,18 +121,28 @@ def retrain_irl(experiment_path):
     # second passing cycle
     irl_demos = demos['passing_2']
     publish_demo_markers(irl_demos)
-    irl(nav_map, grid_mdp, irl_demos)
+    trained_params = irl(nav_map, grid_mdp, irl_demos)
+
+    param_save_path = os.path.join(experiment_run_path, "params.pkl")
+    pickle.dump(trained_params, open(param_save_path, 'wb'))
 
 
 if __name__ == '__main__':
     rospy.init_node('learn_from_demo_node')
     rospy.loginfo("learn from demonstration node started")
 
+    exp_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../experiments/runs/")
     if len(sys.argv) < 2:
-        rospy.logwarn("usage: rosrun learning-nav-irl experiment_demo_irl.py <experiment_folder_path>")
+        rospy.logwarn("usage: rosrun learning-nav-irl experiment_demo_irl.py <experiment_run>")
+
     else:
-        exp_path = sys.argv[1]
-        if os.path.exists(exp_path):
-            retrain_irl(exp_path)
+        exp_run = sys.argv[1]
+        if exp_run == "all":
+            retrain_all_irl(exp_path)
+
         else:
-            rospy.logerr("path %s does not exist", exp_path)
+            exp_path = os.path.join(exp_path, exp_run)
+            if os.path.exists(exp_path):
+                retrain_irl(exp_path)
+            else:
+                rospy.logerr("path %s does not exist", exp_path)

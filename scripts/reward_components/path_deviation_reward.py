@@ -27,6 +27,7 @@ from reward_function import RewardFunction
 from obstacle_reward import ObstacleReward
 from reward_component import RewardComponent
 from step_reward import StepReward
+from viz_helper import visualize_grid
 
 
 class PathDeviationReward(RewardComponent):
@@ -106,7 +107,8 @@ class PathDeviationReward(RewardComponent):
         direct_path_cells[goal] = 1.0
 
         # visualize direct path cells
-        nav_map.visualize_grid((direct_path_cells > 0) * 100, self.direct_path_pub)
+        visualize_grid((direct_path_cells > 0) * 100, nav_map, rospy.Time.now(),
+                       self.direct_path_pub)
 
         # perform wavefront expansion from direct_path_cells outwards by solving
         # the path_dist_client mdp

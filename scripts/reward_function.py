@@ -21,6 +21,7 @@ import torch
 from nav_msgs.msg import OccupancyGrid
 
 from logging_helper import setup_logger
+from viz_helper import visualize_grid
 
 
 class RewardFunction:
@@ -102,7 +103,8 @@ class RewardFunction:
                                      reward_component.name)
 
         if viz:
-            nav_map.visualize_grid(-5 * viz_reward.detach().numpy()[:, :, 0], self.reward_pub)
+            visualize_grid(-5 * viz_reward.detach().numpy()[:, :, 0], nav_map,
+                           rospy.Time.now(), self.reward_pub)
 
         return state_reward, action_reward
 
