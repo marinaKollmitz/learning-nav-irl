@@ -34,6 +34,8 @@ from nav_msgs.msg import OccupancyGrid, Path
 from nav_msgs.srv import GetPlan, GetPlanResponse
 from visualization_msgs.msg import MarkerArray
 
+from viz_helper import publish_people_marker
+
 from reward_components.step_reward import StepReward
 from reward_components.social_reward import SocialReward
 from reward_components.obstacle_reward import ObstacleReward
@@ -44,6 +46,11 @@ from reward_components.reward_shapes.quadratic_reward import QuadraticReward
 
 
 def load_reward_params(parameter_file):
+    """
+    Load reward parameters from file.
+    :param parameter_file: path to reward parameter file
+    :return: reward parameters
+    """
     params = pickle.load(open(parameter_file))
 
     # unpack parameters in order
@@ -91,8 +98,17 @@ def setup_mdp(grid_actions, reward_function):
 
 
 class SocialPlanner:
+    """
+    Human-Aware robot path planner, using the navigation reward function
+    learned from human demonstrations via IRL.
+    """
 
     def __init__(self, parameter_file):
+        """
+        Initialize social planner.
+        :param parameter_file: path to reward parameter file
+        """
+
         self.map = None
         self.map_info = None
 
@@ -111,8 +127,7 @@ class SocialPlanner:
         self.mdp = setup_mdp(grid_actions, reward_function)
 
         # grid poses of people in the environment
-        # TODO people poses from ros parameter or publisher
-        self.people_pos = [[52, 26]]
+        self.people_pos = rospy.get_param('social_planner/people_pos')
         self.people_pub = rospy.Publisher("people_viz", MarkerArray, queue_size=1,
                                           latch=True)
 
@@ -128,13 +143,24 @@ class SocialPlanner:
         rospy.Subscriber("/move_base/global_costmap/costmap", OccupancyGrid,
                          self.map_callback)
 
-    def map_callback(self, static_map):
-        rospy.loginfo("static map received")
-        self.map = NavMap(static_map)
+    def map_callback(self, inflated_map):
+        """
+        Callback from ros map message.
+        :param inflated_map: inflated map ros message
+        """
 
-        # TODO publish people marker
+        rospy.loginfo("static map received")
+        self.map = NavMap(inflated_map)
+
+        publish_people_marker(self.people_pos, self.map, rospy.Time.now(), self.people_pub)
 
     def make_plan_server(self, req):
+        """
+        ROS service server for path planning.
+        :param req: planning request
+        :return: planning result
+        """
+
         rospy.loginfo("planning requested")
         res = GetPlanResponse()
 
@@ -149,6 +175,13 @@ class SocialPlanner:
         return res
 
     def plan_path(self, start, goal):
+        """
+        Plan path through MDP.
+        :param start: start cell
+        :param goal: goal cell
+        :return: planned grid path
+        """
+
         # get start and goal in grid coordinates
         start_cell = self.map.world2cell(start.pose.position.x, start.pose.position.y)
         goal_cell = self.map.world2cell(goal.pose.position.x, goal.pose.position.y)

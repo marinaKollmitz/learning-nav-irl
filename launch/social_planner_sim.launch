@@ -3,6 +3,15 @@
 
 <arg name="reward_param_file" default="$(find learning-nav-irl)/experiments/runs/params_all.pkl"/>
 
+<!-- start gazebo empty world -->
+<include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+
+<!-- send robot urdf to param server -->
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find learning-nav-irl)/meshes/canny.urdf.xacro'" />
+
+<!-- push robot_description to factory and spawn robot in gazebo -->
+<node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.05" respawn="false" output="screen" />
+
 <!-- start map server -->
 <node name="map_server" pkg="map_server" type="map_server" args="$(find learning-nav-irl)/maps/hallway2_bld080.yaml" >
   <param name="frame_id" value="/map" />
@@ -22,6 +31,13 @@
 </node>
 
 <!-- start social planner node -->
-<node pkg="learning-nav-irl" type="planner_node.py" name="social_planner" args="$(arg reward_param_file)" respawn="false" output="screen" />
+<node pkg="learning-nav-irl" type="planner_node.py" name="social_planner" args="$(arg reward_param_file)" respawn="false" output="screen" >
+  <!--rosparam param="people_pos">[[52, 26]]/rosparam-->
+  <!-- planning with multiple people is also possible -->
+  <rosparam param="people_pos">[[60, 32], [30, 22]]</rosparam>
+</node>
+
+<!-- start rviz for visualization -->
+<node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find learning-nav-irl)/cfg/config.rviz"/>
 
 </launch>

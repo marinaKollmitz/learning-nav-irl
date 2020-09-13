@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
+  name="Canny">
+  
+    <link name="base_link">
+      <inertial>
+        <mass value="10" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="1.05" ixy="0.0" ixz="0.0"
+                 iyy="1.05" iyz="0.0"
+                 izz="0.45" />
+      </inertial>
+
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.25" length="1.0"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.25" length="1.0"/>
+      </geometry>
+      <material name="white"/>
+    </collision>
+
+    </link>
+
+    <!-- position controller -->
+    <gazebo>
+      <plugin name="base_controller" filename="libgazebo_ros_planar_move.so">
+        <commandTopic>cmd_vel</commandTopic>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>odom</odometryFrame>
+        <odometryRate>20.0</odometryRate>
+        <robotBaseFrame>base_link</robotBaseFrame>
+      </plugin>
+    </gazebo>
+
+  <material name="white">
+    <color rgba="1.0 1.0 1.0 0.7"/>
+  </material>  
+
+</robot>
