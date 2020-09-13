@@ -37,6 +37,8 @@ from reward_components.step_reward import StepReward
 from reward_components.reward_shapes.gaussian_reward import GaussianReward
 from reward_components.reward_shapes.quadratic_reward import QuadraticReward
 
+marker_pub = rospy.Publisher("demos", MarkerArray, latch=True, queue_size=1)
+
 
 def setup_reward_function(grid_actions):
     """
@@ -89,7 +91,6 @@ def retrain_all_irl(experiments_path):
             exp_demos = pickle.load(open(demo_path))
             all_demos.extend(exp_demos['passing_2'])
 
-        marker_pub = rospy.Publisher("demos", MarkerArray, latch=True, queue_size=1)
         publish_demo_markers(all_demos, rospy.Time.now(), marker_pub)
 
         trained_params = irl(nav_map, grid_mdp, all_demos)
@@ -115,12 +116,12 @@ def retrain_irl(experiment_run_path):
 
     # first passing cycle
     irl_demos = demos['passing_1']
-    publish_demo_markers(irl_demos)
+    publish_demo_markers(irl_demos, rospy.Time.now(), marker_pub)
     irl(nav_map, grid_mdp, irl_demos)
 
     # second passing cycle
     irl_demos = demos['passing_2']
-    publish_demo_markers(irl_demos)
+    publish_demo_markers(irl_demos, rospy.Time.now(), marker_pub)
     trained_params = irl(nav_map, grid_mdp, irl_demos)
 
     param_save_path = os.path.join(experiment_run_path, "params.pkl")
